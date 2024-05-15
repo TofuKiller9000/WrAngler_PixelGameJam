@@ -6,26 +6,33 @@ using UnityEngine.InputSystem;
 public class FishingInputHandler : MonoBehaviour
 {
 
-    [SerializeField] private Animator fishingPoleAnim;
+    public Animator fishingPoleAnim;
     [Space]
-    [SerializeField] private List<GameObject> spawnableFish;
-    [SerializeField] private List<GameObject> shuffledFish;
+    public List<GameObject> spawnableFish;
+    public List<GameObject> shuffledFish;
 
-    [SerializeField] private Transform fishSpawnPoint; 
+    public Transform fishSpawnPoint; 
 
     [Space]
-    [SerializeField] private float maxFishingWaitTime;
+    public float maxFishingWaitTime;
 
-    [SerializeField] private int skillCheckValue;
+    public int skillCheckValue;
     private bool isFishing;
     private bool fishOnLine;
 
-    private float timeTillSkillCheck;
-    [SerializeField] private float timer = 0; 
+    public float timeTillSkillCheck;
+    public float timer = 0;
+    public GameObject bobber;
+    public GameObject fishingNotif;
+    public float responseTime;
+    private float responseTimer;
+    private GameObject currentFishOnLine; 
     // Start is called before the first frame update
     void Start()
     {
         isFishing = false;
+        bobber.SetActive(false);
+        fishingNotif.SetActive(false);
         timer = 0; 
     }
 
@@ -41,6 +48,14 @@ public class FishingInputHandler : MonoBehaviour
             //Perform skillcheck
             SkillCheck();
         }
+
+        if(fishOnLine)
+        {
+            if(responseTimer >= responseTime)
+            {
+                responseTimer -= Time.deltaTime; 
+            }
+        }
     }
 
     public void OnClick(InputAction.CallbackContext context)
@@ -50,22 +65,38 @@ public class FishingInputHandler : MonoBehaviour
         {
             if (!isFishing)
             {
-                print("Cast Line");
-                shuffledFish = Shuffle<GameObject>(spawnableFish);
+                shuffledFish = Shuffle<GameObject>(spawnableFish); //Shuffle our fish
                 fishingPoleAnim.SetTrigger("Cast");
                 fishingPoleAnim.SetBool("IsFishing", true);
-                isFishing = true;
-                timeTillSkillCheck = Random.Range(1, maxFishingWaitTime);
             }
             else if (isFishing && fishOnLine)
             {
                 //activate fighting mode
+                if(responseTimer >= responseTime)
+                {
+                    //successfully caught fish
+                    print("Fight Time!");
+                    Instantiate(currentFishOnLine, fishSpawnPoint);
+                    fishOnLine = false; 
+                }
+                else
+                {
+                    //didn't react quickly enough. 
+                    print("Reel in");
+                    bobber.SetActive(false);
+                    //reel back in, didn't catch a fish
+                    isFishing = false;
+                    timer = 0;
+                    fishingPoleAnim.SetBool("IsFishing", false);
+                }
             }
             else if (isFishing)
             {
                 print("Reel in");
+                bobber.SetActive(false);
                 //reel back in, didn't catch a fish
                 isFishing = false;
+                timer = 0; 
                 fishingPoleAnim.SetBool("IsFishing", false);
             }
         }
@@ -80,10 +111,12 @@ public class FishingInputHandler : MonoBehaviour
             if(shuffledFish[i].GetComponent<FishBase>().SpawnChance >= skillCheckValue)
             {
                 print("You have a bite on the line!");
-                //fishOnLine = true;
-                Instantiate(shuffledFish[i], fishSpawnPoint);
-                isFishing = false;
+                fishOnLine = true;
+                fishingNotif.SetActive(true);
+                currentFishOnLine = shuffledFish[i];
+                //isFishing = false;
                 fishingPoleAnim.SetBool("IsFishing", false);
+                responseTimer = responseTime;
                 break; 
             }
             else
@@ -100,7 +133,16 @@ public class FishingInputHandler : MonoBehaviour
 
     IEnumerator FishingWait(float time)
     {
+        print("FishingWait");
         yield return new WaitForSeconds(time);
+    }
+
+    public void LineCast()
+    {
+        print("Line has been cast, bobber is in the water");
+        bobber.SetActive(true);
+        timeTillSkillCheck = Random.Range(1, maxFishingWaitTime);
+        isFishing = true;
     }
 
     public List<T> Shuffle<T>(List<T> fishList)

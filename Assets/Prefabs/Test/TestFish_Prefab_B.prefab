@@ -216,4 +216,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fishName: A
   fishDescription: 
-  spawnChance: 50
+  spawnChance: 25

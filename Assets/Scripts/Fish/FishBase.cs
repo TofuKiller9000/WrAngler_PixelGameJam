@@ -7,9 +7,9 @@ public class FishBase : MonoBehaviour, IFish
 
 
     #region Variables
-    [SerializeField] private string fishName;
-    [SerializeField] private string fishDescription;
-    [SerializeField] private int spawnChance;
+    public string fishName;
+    public string fishDescription;
+    public int spawnChance;
     #endregion
 
 
