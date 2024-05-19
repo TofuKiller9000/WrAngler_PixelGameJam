@@ -98,6 +98,7 @@ public class FightingController : MonoBehaviour
         if(activeFishHealth > 0)
         {
             RadioManager.instance.PlaySoundEffect(punchSoundEffect);
+            _activeFish.GetComponent<FishBase>().ActivateTakeDamage();
             activeFishHealth -= punchDamage; 
         }
         else

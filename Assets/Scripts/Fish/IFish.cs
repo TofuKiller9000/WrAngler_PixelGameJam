@@ -21,4 +21,15 @@ public interface IFish
     int SpawnChance { get; }
 
     int Health { get;  }
+
+    Color FlashColor { get; }
+
+    float FlashTime { get; }    
+
+    Sprite HealthySprite { get; }
+
+    Sprite HurtSprite { get; }
+
+    Sprite DefeatedSprite { get; }
+
 }
