@@ -39,10 +39,11 @@ public class FightingController : MonoBehaviour
     [SerializeField] private SceneManager sceneManager;
 
     private PlayerInput _playerInput; 
-    private GameObject _activeFish; 
+    private GameObject _activeFish;
+    private Animator _animator;
+    public Vector3 _defaultPosition; 
     private float _punchTimer;
     private float _roundTimer; 
-    private Animator _animator;
     private bool isRoundActive;
 
     private void Awake()
@@ -50,6 +51,7 @@ public class FightingController : MonoBehaviour
         _animator = GetComponent<Animator>();
         
         _playerInput = GetComponent<PlayerInput>();
+        _defaultPosition = transform.localPosition; 
 
     }
 
@@ -57,6 +59,9 @@ public class FightingController : MonoBehaviour
     private void OnEnable()
     {
         Debug.Log("Fighting Controller Enabled");
+        gameObject.transform.localPosition = _defaultPosition;
+        gameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
+
         _activeFish = fightingPlayerFishHolder.transform.GetChild(0).gameObject;
         if (_activeFish == null)
         {
@@ -74,8 +79,16 @@ public class FightingController : MonoBehaviour
         timerParent.SetActive(true);
         _punchTimer = punchDelay;
         winState = false;
-        sceneManager.ActivateTransistion(0, 1);
+//sceneManager.ActivateTransistion(0, 1);
         StartRound();
+    }
+
+    private void OnDisable()
+    {
+        Debug.Log("Player local position: " + gameObject.transform.localPosition);
+        gameObject.transform.localPosition = _defaultPosition;
+        gameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
+        Debug.Log("Player local position: " + gameObject.transform.localPosition);
     }
 
     public void OnPunch(InputAction.CallbackContext context)
@@ -98,12 +111,14 @@ public class FightingController : MonoBehaviour
         if(activeFishHealth > 0)
         {
             RadioManager.instance.PlaySoundEffect(punchSoundEffect);
-            _activeFish.GetComponent<FishBase>().ActivateTakeDamage();
+            _activeFish.GetComponent<FishBase>().ActivateTakeDamage(activeFishHealth);
             activeFishHealth -= punchDamage; 
         }
         else
         {
             RadioManager.instance.PlaySoundEffect(finalPunchSoundEffect);
+            _activeFish.GetComponent<FishBase>().ActivateTakeDamage(activeFishHealth);
+            _activeFish.GetComponent<FishBase>().SetPosition();
             winState = true; 
             EndRound();
         }
@@ -146,10 +161,16 @@ public class FightingController : MonoBehaviour
         if(winState == true)
         {
             print("You defeated the fish!!");
+            //if(punchDamage < 3)
+            //{
+            //    punchDamage++;
+            //}
+            
         }
         else
         {
             _activeFish.GetComponent<FishBase>().FadeAway();
+            _activeFish.transform.parent = null;
             print("You didn't defeat the fish");
         }
         Debug.Log("Activating Leave Animation in Fighting Controller");

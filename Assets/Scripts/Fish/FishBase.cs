@@ -8,13 +8,23 @@ public class FishBase : MonoBehaviour, IFish
 
 
     #region Variables
+    [Header("Fish Values")]
     public string fishName;
     public string fishDescription;
     public int spawnChance;
     public int health;
-    public Sprite healthySprite, hurtSprite, defeatedSprite; 
+    [Space]
+    [Header("Fish Assets")]
+    public Sprite healthySprite;
+    public Sprite hurtSprite;
+    public Sprite defeatedSprite;
     public Color _flashColor = Color.white;
-    public float _flashTime = 0.25f; 
+    public float _flashTime = 0.25f;
+    [Space]
+    [Header("Fish Positioning")]
+    public float scale = 1; 
+    public Vector2 customPosition = Vector2.zero;
+
     private Animator _animator; 
     private SpriteRenderer _spriteRenderer;
     private Material _material;
@@ -32,6 +42,10 @@ public class FishBase : MonoBehaviour, IFish
 
     public int Health => health;
 
+    public Vector2 CustomPosition => customPosition;
+
+    public float Scale => scale; 
+
     public Color FlashColor => _flashColor;
 
     public float FlashTime => _flashTime;   
@@ -48,10 +62,12 @@ public class FishBase : MonoBehaviour, IFish
     {
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
-        _material = GetComponent<Material>();
-
-        _material.SetColor("_FlashColor", _flashColor);
-        _material.SetFloat("_FlashAmount", 0);
+        _material = GetComponent<SpriteRenderer>().material;
+        if( _material != null )
+        {
+            _material.SetColor("_FlashColor", _flashColor);
+            _material.SetFloat("_FlashAmount", 0);
+        }
     }
 
     public void DestroyFish()
@@ -62,16 +78,26 @@ public class FishBase : MonoBehaviour, IFish
     public void FadeAway()
     {
         _animator.SetTrigger("Fade");
-        StartCoroutine(AnimationWait("FishFadeAway_anim"));
+        //StartCoroutine(AnimationWait("FishFadeAway_anim"));
     }
 
-    public void ActivateTakeDamage()
+    public void ActivateTakeDamage(int currentHealth)
     {
-        StartCoroutine(TakeDamage());
+        StartCoroutine(TakeDamage(currentHealth));
         //put things here like special effects and particle effects for whenever we damage a fish
     }
 
-    IEnumerator TakeDamage()
+    public void SetPosition()
+    {
+        transform.position = Vector2.zero; transform.rotation = Quaternion.identity;
+        transform.localPosition = customPosition;
+        if(scale != 0)
+        {
+            transform.localScale = new Vector2(scale, scale);
+        }
+    }
+
+    IEnumerator TakeDamage(int currentHealth)
     {
         float currentFlashAmount = 0f;
         float elapsedTime = 0f; 
@@ -83,6 +109,17 @@ public class FishBase : MonoBehaviour, IFish
             _material.SetFloat("_FlashAmount", currentFlashAmount);
             yield return null;
         }
+
+        if(currentHealth == Mathf.RoundToInt(health/2))
+        {
+            print(currentHealth + " " + Mathf.RoundToInt(health / 2));
+            SetSpriteState("Hurt");
+        }
+        if(currentHealth <= 0)
+        {
+            SetSpriteState("Defeated");
+            //_animator.SetBool("FishDead", true);
+        }
     }
 
     public void SetSpriteState(string state)
@@ -93,7 +130,8 @@ public class FishBase : MonoBehaviour, IFish
                 _spriteRenderer.sprite = healthySprite;
                 break;
             case ("Hurt"):
-                _spriteRenderer.sprite = hurtSprite; 
+                _spriteRenderer.sprite = hurtSprite;
+                Debug.Log("Sprite should now be showing hurt image");
                 break;
             case ("Defeated"):
                 _spriteRenderer.sprite = defeatedSprite;

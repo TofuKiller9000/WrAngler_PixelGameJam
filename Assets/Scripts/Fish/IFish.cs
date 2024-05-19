@@ -22,6 +22,10 @@ public interface IFish
 
     int Health { get;  }
 
+    Vector2 CustomPosition { get; }
+
+    float Scale { get; }
+
     Color FlashColor { get; }
 
     float FlashTime { get; }    

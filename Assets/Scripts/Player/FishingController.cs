@@ -25,6 +25,7 @@ public class FishingController : MonoBehaviour
     [Header("Audio Properties")]
     [SerializeField] private AudioClip diveSoundEffect;
     [SerializeField] private AudioClip castSoundEffect;
+    [SerializeField] private AudioClip bobberSoundEffect;
     [SerializeField] private AudioClip biteOnLineSoundEffect;
     [SerializeField] private AudioClip beachAmbiance;
 
@@ -43,15 +44,17 @@ public class FishingController : MonoBehaviour
     private bool isFishing;
     private bool fishOnLine;
     private bool winGameState;
+    private bool firstLoadIn = true;
     private int skillCheckValue;
     private float timer = 0;
     private float timeTillSkillCheck;
     private float responseTimer;
+    public Vector3 _defaultPosition; 
     private GameObject currentFishOnLine;
     private List<GameObject> shuffledFish;
     private PlayerInput _playerInput;
     private FishBase defeatedFish;
-    private bool firstLoadIn = true; 
+     
     #endregion
 
     private void Awake()
@@ -66,10 +69,16 @@ public class FishingController : MonoBehaviour
         fishingNotif.SetActive(false);
         timer = 0;
         fishOnLine = false;
+        _defaultPosition = transform.localPosition;
     }
 
     private void OnEnable()
     {
+        Debug.Log("Player local position: " + gameObject.transform.localPosition);
+        gameObject.transform.localPosition = _defaultPosition;
+        gameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
+
+        Debug.Log("Player local position: " +  gameObject.transform.localPosition);
         Debug.Log("Fishing Controller Enabled");
         int fishCount = fishingPlayerFishHolder.transform.childCount;
 
@@ -93,29 +102,31 @@ public class FishingController : MonoBehaviour
                 {
                     Debug.LogError("UNABLE TO FIND FISHBASE ON DEFEATED FISH");
                 }
-                isFishing = false;
-                bobber.SetActive(false);
-                fishingNotif.SetActive(false);
-                timer = 0;
-                fishOnLine = false;
-                RadioManager.instance.StopAmbience();
-                RadioManager.instance.PlayAmbience(beachAmbiance);
-                FishingAnimator.SetTrigger("Return");
+                StartCoroutine(FishingRoundStart());
             }
             else
             {
-                _playerInput.enabled = false;
-                isFishing = false;
-                bobber.SetActive(false);
-                fishingNotif.SetActive(false);
-                timer = 0;
-                fishOnLine = false;
-                FishingAnimator.SetTrigger("Return");
-                RadioManager.instance.StopAmbience();
-                RadioManager.instance.PlayAmbience(beachAmbiance);
-                _playerInput.enabled = true;
+                StartCoroutine(FishingRoundStart());
+                //_playerInput.enabled = false;
+                //isFishing = false;
+                //bobber.SetActive(false);
+                //fishingNotif.SetActive(false);
+                //timer = 0;
+                //fishOnLine = false;
+                //FishingAnimator.SetTrigger("Return");
+                //RadioManager.instance.StopAmbience();
+                //RadioManager.instance.PlayAmbience(beachAmbiance);
+                //_playerInput.enabled = true;
             }
         }
+    }
+
+    private void OnDisable()
+    {
+        Debug.Log("Player local position: " + gameObject.transform.localPosition);
+        gameObject.transform.localPosition = _defaultPosition;
+        gameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
+        Debug.Log("Player local position: " + gameObject.transform.localPosition);
     }
 
     void Update()
@@ -139,6 +150,7 @@ public class FishingController : MonoBehaviour
             else
             {
                 fishingNotif.SetActive(false);
+                ReelIn();
             }
         }
     }
@@ -191,6 +203,7 @@ public class FishingController : MonoBehaviour
                 //print("You have a bite on the line!");
                 fishOnLine = true;
                 fishingNotif.SetActive(true);
+                FishingAnimator.SetBool("FishOnLine", true);
                 currentFishOnLine = shuffledFish[i];
                 responseTimer = responseTime;
                 break;
@@ -209,6 +222,8 @@ public class FishingController : MonoBehaviour
         fishingNotif.SetActive(false);
         FishingAnimator.SetBool("IsFishing", false);
         isFishing = false;
+        fishOnLine = false;
+        FishingAnimator.SetBool("FishOnLine", false);
         timer = 0;
     }
 
@@ -217,7 +232,7 @@ public class FishingController : MonoBehaviour
         //successfully caught fish
         //print("Fight Time!");
         GameObject spawnedFish = Instantiate(currentFishOnLine, fightingPlayerFishHolder); //we spawn a fish on our fishSpawnPoint in the other area
-        spawnedFish.transform.localPosition = Vector3.zero;
+        spawnedFish.GetComponent<FishBase>().SetPosition();
         FishingAnimator.SetBool("IsFishing", false);
         bobber.SetActive(false);
         fishingNotif.SetActive(false);
@@ -245,32 +260,44 @@ public class FishingController : MonoBehaviour
         bobber.SetActive(true); //this is temporary, and is only here for testing purposes. Will be replaced by animations when they are done
         timeTillSkillCheck = Random.Range(1, maxFishingWaitTime+1); //we set the time till a skill check to a random value from 1 to our maxFishing wait time
         isFishing = true;
+        RadioManager.instance.PlaySoundEffect(bobberSoundEffect);
     }
 
     public void ShowCaughtFish()
     {
-        print("Defeated Fish == " + defeatedFish.fishName);
-        for (int i = 0; i < hooks.Length; i++)
+        
+        if(defeatedFish != null)
         {
-            if (defeatedFish.fishName.Contains(hooks[i].GetComponent<FishBase>().fishName))
+            print("Defeated Fish == " + defeatedFish.fishName);
+            for (int i = 0; i < hooks.Length; i++)
             {
-                if (!hooks[i].gameObject.activeSelf)
+                if (defeatedFish.fishName.Contains(hooks[i].GetComponent<FishBase>().fishName))
                 {
-                    hooks[i].SetActive(true);
-                }
-                else
-                {
-                    break;
+                    if (!hooks[i].gameObject.activeSelf)
+                    {
+                        hooks[i].SetActive(true);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
+
+            defeatedFish.DestroyFish();
+            defeatedFish = null;
+            
+
         }
-
-        defeatedFish.DestroyFish();
-        defeatedFish = null;
         _playerInput.enabled = true;
-
     }
 
+
+    public void PlayCastSFX()
+    {
+        print("Play Sound effect ");
+        RadioManager.instance.PlaySoundEffect(castSoundEffect);
+    }
 
     #endregion
 
@@ -292,14 +319,16 @@ public class FishingController : MonoBehaviour
 
     private IEnumerator FishingRoundStart()
     {
-        Debug.Log("Wait until SceneManager Coroutines are done : " + Time.time);
-        yield return new WaitUntil(() => sceneManager.inTransistion == false);
-        Debug.Log("Scene Manager finished: " + Time.time + sceneManager.inTransistion);
         isFishing = false;
         bobber.SetActive(false);
         fishingNotif.SetActive(false);
         timer = 0;
         fishOnLine = false;
-        //play animation of returning to spot
+        Debug.Log("Wait until SceneManager Coroutines are done : " + Time.time);
+        yield return new WaitUntil(() => sceneManager.inTransistion == false);
+        Debug.Log("Scene Manager finished: " + Time.time + sceneManager.inTransistion);
+        RadioManager.instance.StopAmbience();
+        RadioManager.instance.PlayAmbience(beachAmbiance);
+        FishingAnimator.SetTrigger("Return");
     }
 }
