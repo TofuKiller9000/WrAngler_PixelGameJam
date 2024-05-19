@@ -19,4 +19,6 @@ public interface IFish
     string FishDescription { get; }
 
     int SpawnChance { get; }
+
+    int Health { get;  }
 }

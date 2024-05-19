@@ -12,20 +12,22 @@ public class FishingController : MonoBehaviour
     [SerializeField] private float maxFishingWaitTime;
     [SerializeField] private float responseTime;
     [Space]
-    [SerializeField] private Transform fishSpawnPoint;
+    [SerializeField] private Transform fightingPlayerFishHolder;
+    [SerializeField] private Transform fishingPlayerFishHolder; 
     [SerializeField] private GameObject bobber;
-    [Space]
-    private bool removeFishWhenCaught = false;
 
     [Space]
     [Header("Animation & UI")]
     [SerializeField] private Animator FishingAnimator;
     [SerializeField] private GameObject fishingNotif;
 
+    [Header("Scripts")]
+    [SerializeField] private SceneManager sceneManager;
+
     [Space]
     [Header("Fish")]
     public List<GameObject> spawnableFish;
-
+    public GameObject[] hooks = new GameObject[6]; 
 
 
     #endregion
@@ -33,7 +35,6 @@ public class FishingController : MonoBehaviour
     #region Private
     private bool isFishing;
     private bool fishOnLine;
-    private bool caughtFish;
     private bool winGameState;
     private int skillCheckValue;
     private float timer = 0;
@@ -41,17 +42,57 @@ public class FishingController : MonoBehaviour
     private float responseTimer;
     private GameObject currentFishOnLine;
     private List<GameObject> shuffledFish;
+    private PlayerInput _playerInput;
+    private FishBase defeatedFish;
+    private bool firstLoadIn = true; 
     #endregion
-    
-    
 
-    void Start()
+    private void Awake()
     {
+        _playerInput = GetComponent<PlayerInput>();
+        if( _playerInput == null )
+        {
+            Debug.LogError("UNABLE TO FIND PLAYERINPUT ON FISHING CONTROLLER");
+        }
         isFishing = false;
         bobber.SetActive(false);
         fishingNotif.SetActive(false);
         timer = 0;
-        caughtFish = false;
+        fishOnLine = false;
+    }
+
+    private void OnEnable()
+    {
+        Debug.Log("Fishing Controller Enabled");
+        int fishCount = fishingPlayerFishHolder.transform.childCount;
+        
+        if (fishCount > 0 && !firstLoadIn)
+        {
+            var tempFish = fishingPlayerFishHolder.transform.GetChild(0);
+            FishingAnimator.SetBool("Returning", true);
+            _playerInput.enabled = false;
+            defeatedFish = null;
+            defeatedFish = tempFish.GetComponent<FishBase>();
+            if (defeatedFish == null)
+            {
+                Debug.LogError("UNABLE TO FIND FISHBASE ON DEFEATED FISH");
+            }
+            isFishing = false;
+            bobber.SetActive(false);
+            fishingNotif.SetActive(false);
+            timer = 0;
+            fishOnLine = false;
+            FishingAnimator.SetTrigger("Return");
+            //sceneManager.ActivateTransistion(0, 1);
+            //StartCoroutine(FishingRoundStart());
+        }
+        else
+        {
+            //FishingAnimator.SetBool("Returning", false);
+
+            _playerInput.enabled = true;
+            //here we would put the tutorial screen
+        }
     }
 
     void Update()
@@ -87,16 +128,15 @@ public class FishingController : MonoBehaviour
         if (context.canceled && !winGameState)
         {
             //print("Click!");
-            if (!isFishing)
+            if (!isFishing) //we haven't cast our line yet
             {
                 shuffledFish = Shuffle<GameObject>(spawnableFish); //Shuffle our fish
-                FishingAnimator.SetTrigger("Cast");
+                FishingAnimator.SetTrigger("Cast"); //An animation event triggers the LineCast() function
                 FishingAnimator.SetBool("IsFishing", true);
             }
-            else if (isFishing && fishOnLine)
+            else if (isFishing && fishOnLine) //we have already casted our line, and we have a fish on the line, so we want to reel it in
             {
-                print("You have a fish on the line and are trying to reel it in");
-                if (responseTimer > 0.01)
+                if (responseTimer > 0.01) //if our responseTimer is not at or less than 0, we have successfully caught the fish
                 {
                     CatchFish();
 
@@ -106,7 +146,7 @@ public class FishingController : MonoBehaviour
                     ReelIn();
                 }
             }
-            else if (isFishing)
+            else if (isFishing) //we have already cast our line, and there is no fish on the line, so we just want to reel it in. 
             {
                 ReelIn();
             }
@@ -119,26 +159,19 @@ public class FishingController : MonoBehaviour
     #region Fishing Functions
     private void SkillCheck()
     {
-        print("In Skill Check");
+        //print("In Skill Check");
         skillCheckValue = Random.Range(0, 101);
         for (int i = 0; i < shuffledFish.Count; i++)
         {
             if (shuffledFish[i].GetComponent<FishBase>().SpawnChance >= skillCheckValue)
             {
-                print("You have a bite on the line!");
+                //print("You have a bite on the line!");
                 fishOnLine = true;
                 fishingNotif.SetActive(true);
                 currentFishOnLine = shuffledFish[i];
-                //isFishing = false;
-                //FishingAnimator.SetBool("IsFishing", false);
                 responseTimer = responseTime;
-                print("fishOnLine: " + fishOnLine);
                 break;
             }
-            //else
-            //{
-            //    //print("i: " + i);
-            //}
         }
 
         timeTillSkillCheck = Random.Range(1, maxFishingWaitTime);
@@ -159,63 +192,60 @@ public class FishingController : MonoBehaviour
     private void CatchFish()
     {
         //successfully caught fish
-        print("Fight Time!");
-        Instantiate(currentFishOnLine, fishSpawnPoint);
+        //print("Fight Time!");
+        GameObject spawnedFish = Instantiate(currentFishOnLine, fightingPlayerFishHolder); //we spawn a fish on our fishSpawnPoint in the other area
+        spawnedFish.transform.localPosition = Vector3.zero;
         FishingAnimator.SetBool("IsFishing", false);
         bobber.SetActive(false);
         fishingNotif.SetActive(false);
-        caughtFish = true;
         fishOnLine = false;
         isFishing = false;
         timer = 0;
         responseTimer = responseTime;
-        if(removeFishWhenCaught)
-        {
-
-            RemoveFishFromList(currentFishOnLine.GetComponent<FishBase>().fishName);
-        }
-
-        if(spawnableFish.Count == 0)
-        {
-            print("You've caught all the fish!");
-            //here we should subscribe to a win state in a game manager 
-            winGameState = true; 
-        }
-        else
-        {
-            print("There are " + spawnableFish.Count + " fish remaining to catch!");
-        }
+        _playerInput.enabled = false; //disable player input
+        FishingAnimator.SetTrigger("Diving"); //Animation event triggers DivingIn() function
     }
 
-    void RemoveFishFromList(string fishName)
+    public void DivingIn()
     {
-        int fishToRemoveIndex = 0;
-
-        for (int i = 0; i < spawnableFish.Count; i++)
-        {
-            if (spawnableFish[i].GetComponent<FishBase>().FishName.Contains(fishName))
-            {
-                fishToRemoveIndex = i;
-            }
-        }
-        if (spawnableFish.Count == 1)
-        {
-            spawnableFish.Clear();
-        }
-        else
-        {
-            spawnableFish.RemoveAt(fishToRemoveIndex);
-        }
-
+        //play DiveIn Sound effect
+        RadioManager.instance.PauseAllStations();
+        firstLoadIn = false; 
+        sceneManager.ActivateTransistion(1, 0, "Fighting"); //activate our Scene Transistion coroutine in our scene manager
     }
 
     public void LineCast()
     {
-        print("Line has been cast, bobber is in the water");
-        bobber.SetActive(true);
-        timeTillSkillCheck = Random.Range(1, maxFishingWaitTime);
+        //Our line has been cast, and we set our bobber to be active
+        bobber.SetActive(true); //this is temporary, and is only here for testing purposes. Will be replaced by animations when they are done
+        timeTillSkillCheck = Random.Range(1, maxFishingWaitTime+1); //we set the time till a skill check to a random value from 1 to our maxFishing wait time
         isFishing = true;
     }
+
+    public void ShowCaughtFish()
+    {
+        print("Defeated Fish == " + defeatedFish.fishName);
+        for (int i = 0; i < hooks.Length; i++)
+        {
+            if (defeatedFish.fishName.Contains(hooks[i].GetComponent<FishBase>().fishName))
+            {
+                if (!hooks[i].gameObject.activeSelf)
+                {
+                    hooks[i].SetActive(true);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        defeatedFish.DestroyFish();
+        defeatedFish = null;
+        _playerInput.enabled = true;
+
+    }
+
 
     #endregion
 
@@ -235,4 +265,16 @@ public class FishingController : MonoBehaviour
 
     #endregion
 
+    private IEnumerator FishingRoundStart()
+    {
+        Debug.Log("Wait until SceneManager Coroutines are done : " + Time.time);
+        yield return new WaitUntil(() => sceneManager.inTransistion == false);
+        Debug.Log("Scene Manager finished: " + Time.time + sceneManager.inTransistion);
+        isFishing = false;
+        bobber.SetActive(false);
+        fishingNotif.SetActive(false);
+        timer = 0;
+        fishOnLine = false;
+        //play animation of returning to spot
+    }
 }
