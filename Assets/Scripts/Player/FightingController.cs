@@ -22,6 +22,15 @@ public class FightingController : MonoBehaviour
     [Space]
     [SerializeField] private int countDownValue;
 
+
+    [Space]
+    [Header("Audio Properties")]
+    [SerializeField] private AudioClip punchSoundEffect;
+    [SerializeField] private AudioClip finalPunchSoundEffect;
+    [SerializeField] private AudioClip underwaterAmbiance;
+    [SerializeField] private AudioClip bellSoundEffect;
+    
+
     [Header("Animations & UI")]
     [SerializeField] private Image timerForeground;
     [SerializeField] TextMeshProUGUI countDownDisplay; 
@@ -31,10 +40,11 @@ public class FightingController : MonoBehaviour
     [SerializeField] private SceneManager sceneManager;
 
     private PlayerInput _playerInput; 
-    private GameObject _activeFish; 
+    private GameObject _activeFish;
+    private Animator _animator;
+    public Vector3 _defaultPosition; 
     private float _punchTimer;
     private float _roundTimer; 
-    private Animator _animator;
     private bool isRoundActive;
 
     private void Awake()
@@ -42,6 +52,7 @@ public class FightingController : MonoBehaviour
         _animator = GetComponent<Animator>();
         
         _playerInput = GetComponent<PlayerInput>();
+        _defaultPosition = transform.localPosition; 
 
     }
 
@@ -49,6 +60,9 @@ public class FightingController : MonoBehaviour
     private void OnEnable()
     {
         Debug.Log("Fighting Controller Enabled");
+        gameObject.transform.localPosition = _defaultPosition;
+        gameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
+
         _activeFish = fightingPlayerFishHolder.transform.GetChild(0).gameObject;
         if (_activeFish == null)
         {
@@ -66,8 +80,16 @@ public class FightingController : MonoBehaviour
         timerParent.SetActive(true);
         _punchTimer = punchDelay;
         winState = false;
-        sceneManager.ActivateTransistion(0, 1);
+//sceneManager.ActivateTransistion(0, 1);
         StartRound();
+    }
+
+    private void OnDisable()
+    {
+        Debug.Log("Player local position: " + gameObject.transform.localPosition);
+        gameObject.transform.localPosition = _defaultPosition;
+        gameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
+        Debug.Log("Player local position: " + gameObject.transform.localPosition);
     }
 
     public void OnPunch(InputAction.CallbackContext context)
@@ -89,11 +111,22 @@ public class FightingController : MonoBehaviour
         print("Damage fish");
         if(activeFishHealth > 0)
         {
+            RadioManager.instance.PlaySoundEffect(punchSoundEffect);
+            _activeFish.GetComponent<FishBase>().ActivateTakeDamage(activeFishHealth);
             activeFishHealth -= punchDamage; 
         }
-        else
+        else if(activeFishHealth <= 2 && activeFishHealth != 0)
         {
-            winState = true; 
+            RadioManager.instance.PlaySoundEffect(finalPunchSoundEffect);
+            _activeFish.GetComponent<FishBase>().ActivateTakeDamage(activeFishHealth);
+
+        }
+        else if (activeFishHealth == 0)
+        {
+            RadioManager.instance.PlaySoundEffect(finalPunchSoundEffect);
+            _activeFish.GetComponent<FishBase>().ActivateTakeDamage(activeFishHealth);
+            _activeFish.GetComponent<FishBase>().SetPosition();
+            winState = true;
             EndRound();
         }
     }
@@ -135,10 +168,16 @@ public class FightingController : MonoBehaviour
         if(winState == true)
         {
             print("You defeated the fish!!");
+            //if(punchDamage < 3)
+            //{
+            //    punchDamage++;
+            //}
+            
         }
         else
         {
             _activeFish.GetComponent<FishBase>().FadeAway();
+            _activeFish.transform.parent = null;
             print("You didn't defeat the fish");
         }
         Debug.Log("Activating Leave Animation in Fighting Controller");
@@ -169,6 +208,7 @@ public class FightingController : MonoBehaviour
     public void StartRound()
     {
         RadioManager.instance.PlayFightMusic();
+        RadioManager.instance.PlayAmbience(underwaterAmbiance);
         StartCoroutine(CountDownCoroutine());
     }
 
@@ -183,11 +223,13 @@ public class FightingController : MonoBehaviour
         while( currentTime > 0 )
         {
             countDownDisplay.text = currentTime.ToString();
+            RadioManager.instance.PlaySoundEffect(bellSoundEffect);
             yield return new WaitForSeconds(1f);
 
             currentTime--; 
         }
 
+        RadioManager.instance.PlaySoundEffect(bellSoundEffect);
         countDownDisplay.text = "WRANGLE TIME!!";
          yield return new WaitForSeconds(1f);
 

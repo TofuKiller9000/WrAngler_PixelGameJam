@@ -21,4 +21,19 @@ public interface IFish
     int SpawnChance { get; }
 
     int Health { get;  }
+
+    Vector2 CustomPosition { get; }
+
+    float Scale { get; }
+
+    Color FlashColor { get; }
+
+    float FlashTime { get; }    
+
+    Sprite HealthySprite { get; }
+
+    Sprite HurtSprite { get; }
+
+    Sprite DefeatedSprite { get; }
+
 }
