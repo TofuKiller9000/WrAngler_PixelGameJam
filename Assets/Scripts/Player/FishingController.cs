@@ -21,6 +21,13 @@ public class FishingController : MonoBehaviour
     [SerializeField] private Animator FishingAnimator;
     [SerializeField] private GameObject fishingNotif;
 
+    [Space]
+    [Header("Audio Properties")]
+    [SerializeField] private AudioClip diveSoundEffect;
+    [SerializeField] private AudioClip castSoundEffect;
+    [SerializeField] private AudioClip biteOnLineSoundEffect;
+    [SerializeField] private AudioClip beachAmbiance;
+
     [Header("Scripts")]
     [SerializeField] private SceneManager sceneManager;
 
@@ -65,33 +72,49 @@ public class FishingController : MonoBehaviour
     {
         Debug.Log("Fishing Controller Enabled");
         int fishCount = fishingPlayerFishHolder.transform.childCount;
-        
-        if (fishCount > 0 && !firstLoadIn)
+
+        if(firstLoadIn)
         {
-            var tempFish = fishingPlayerFishHolder.transform.GetChild(0);
-            FishingAnimator.SetBool("Returning", true);
-            _playerInput.enabled = false;
-            defeatedFish = null;
-            defeatedFish = tempFish.GetComponent<FishBase>();
-            if (defeatedFish == null)
-            {
-                Debug.LogError("UNABLE TO FIND FISHBASE ON DEFEATED FISH");
-            }
-            isFishing = false;
-            bobber.SetActive(false);
-            fishingNotif.SetActive(false);
-            timer = 0;
-            fishOnLine = false;
-            FishingAnimator.SetTrigger("Return");
-            //sceneManager.ActivateTransistion(0, 1);
-            //StartCoroutine(FishingRoundStart());
+            Debug.Log("First Time Load In");
+            RadioManager.instance.PlayAmbience(beachAmbiance);
+            _playerInput.enabled = true;
+            //here we would put the tutorial screen
         }
         else
         {
-            //FishingAnimator.SetBool("Returning", false);
-
-            _playerInput.enabled = true;
-            //here we would put the tutorial screen
+            if(fishCount > 0 )
+            {
+                Debug.Log("Not First Time, and we have a fish");
+                var tempFish = fishingPlayerFishHolder.transform.GetChild(0);
+                _playerInput.enabled = false;
+                defeatedFish = null;
+                defeatedFish = tempFish.GetComponent<FishBase>();
+                if (defeatedFish == null)
+                {
+                    Debug.LogError("UNABLE TO FIND FISHBASE ON DEFEATED FISH");
+                }
+                isFishing = false;
+                bobber.SetActive(false);
+                fishingNotif.SetActive(false);
+                timer = 0;
+                fishOnLine = false;
+                RadioManager.instance.StopAmbience();
+                RadioManager.instance.PlayAmbience(beachAmbiance);
+                FishingAnimator.SetTrigger("Return");
+            }
+            else
+            {
+                _playerInput.enabled = false;
+                isFishing = false;
+                bobber.SetActive(false);
+                fishingNotif.SetActive(false);
+                timer = 0;
+                fishOnLine = false;
+                FishingAnimator.SetTrigger("Return");
+                RadioManager.instance.StopAmbience();
+                RadioManager.instance.PlayAmbience(beachAmbiance);
+                _playerInput.enabled = true;
+            }
         }
     }
 
@@ -210,6 +233,8 @@ public class FishingController : MonoBehaviour
     {
         //play DiveIn Sound effect
         RadioManager.instance.PauseAllStations();
+        RadioManager.instance.StopAmbience();
+        RadioManager.instance.PlaySoundEffect(diveSoundEffect);
         firstLoadIn = false; 
         sceneManager.ActivateTransistion(1, 0, "Fighting"); //activate our Scene Transistion coroutine in our scene manager
     }

@@ -22,6 +22,14 @@ public class FightingController : MonoBehaviour
     [Space]
     [SerializeField] private int countDownValue;
 
+
+    [Space]
+    [Header("Audio Properties")]
+    [SerializeField] private AudioClip punchSoundEffect;
+    [SerializeField] private AudioClip finalPunchSoundEffect;
+    [SerializeField] private AudioClip underwaterAmbiance; 
+    
+
     [Header("Animations & UI")]
     [SerializeField] private Image timerForeground;
     [SerializeField] TextMeshProUGUI countDownDisplay; 
@@ -89,10 +97,12 @@ public class FightingController : MonoBehaviour
         print("Damage fish");
         if(activeFishHealth > 0)
         {
+            RadioManager.instance.PlaySoundEffect(punchSoundEffect);
             activeFishHealth -= punchDamage; 
         }
         else
         {
+            RadioManager.instance.PlaySoundEffect(finalPunchSoundEffect);
             winState = true; 
             EndRound();
         }
@@ -169,6 +179,7 @@ public class FightingController : MonoBehaviour
     public void StartRound()
     {
         RadioManager.instance.PlayFightMusic();
+        RadioManager.instance.PlayAmbience(underwaterAmbiance);
         StartCoroutine(CountDownCoroutine());
     }
 

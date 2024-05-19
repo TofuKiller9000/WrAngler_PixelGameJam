@@ -13,7 +13,8 @@ public class RadioManager : MonoBehaviour
     public AudioSource stationThree;
     public AudioSource fightMusic; 
     public AudioSource radioClick;
-    public AudioSource soundEffects; 
+    public AudioSource soundEffects;
+    public AudioSource ambience; 
 
     public bool onLand = true;
     public float channelDelay;
@@ -73,6 +74,23 @@ public class RadioManager : MonoBehaviour
                 stationThree.volume = 0;
                 break;
         }
+    }
+
+    public void PlaySoundEffect(AudioClip clip)
+    {
+        soundEffects.clip = clip;
+        soundEffects.Play();
+    }
+
+    public void PlayAmbience(AudioClip clip)
+    {
+        ambience.clip = clip;
+        ambience.Play();
+    }
+
+    public void StopAmbience()
+    {
+        ambience.Stop();
     }
 
     public void PlayFightMusic()
