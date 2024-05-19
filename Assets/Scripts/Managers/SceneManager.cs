@@ -17,6 +17,7 @@ public class SceneManager : MonoBehaviour
 
     [Space]
     [Header("Game Modes")]
+    [SerializeField] private GameObject tutorial; 
     [SerializeField] private GameObject fishing;
     [SerializeField] private GameObject fighting;
 
@@ -24,7 +25,7 @@ public class SceneManager : MonoBehaviour
 
     public bool inTransistion = false;
     private Animator _transistionAnimator;
-    private string activeGameMode = "Fishing";
+    private string activeGameMode = "";
 
     private void Awake()
     {
@@ -58,6 +59,12 @@ public class SceneManager : MonoBehaviour
         //StartCoroutine(WaitUntilEndOfAnimation());
     }
 
+    public void OpeningTransistion()
+    {
+        inTransistion = true;
+        transistionObject.SetActive(true);
+    }
+
     public void SetGameMode()
     {
         if (activeGameMode.Contains("Fishing"))
@@ -79,6 +86,13 @@ public class SceneManager : MonoBehaviour
             fighting.SetActive(true);
             //yield return new WaitForSeconds(0.25f);
             //_camera.gameObject.transform.position = fightingCameraPosition.position;
+        }
+        else
+        {
+            Destroy(tutorial);
+            fighting.SetActive(false);
+            fishing.SetActive(true);
+            RadioManager.instance.ResumeAllStations();
         }
     }
 

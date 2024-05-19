@@ -115,7 +115,7 @@ public class FishBase : MonoBehaviour, IFish
             print(currentHealth + " " + Mathf.RoundToInt(health / 2));
             SetSpriteState("Hurt");
         }
-        if(currentHealth <= 0)
+        if(currentHealth <= 2)
         {
             SetSpriteState("Defeated");
             //_animator.SetBool("FishDead", true);

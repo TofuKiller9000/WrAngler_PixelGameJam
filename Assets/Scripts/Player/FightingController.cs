@@ -27,7 +27,8 @@ public class FightingController : MonoBehaviour
     [Header("Audio Properties")]
     [SerializeField] private AudioClip punchSoundEffect;
     [SerializeField] private AudioClip finalPunchSoundEffect;
-    [SerializeField] private AudioClip underwaterAmbiance; 
+    [SerializeField] private AudioClip underwaterAmbiance;
+    [SerializeField] private AudioClip bellSoundEffect;
     
 
     [Header("Animations & UI")]
@@ -114,12 +115,18 @@ public class FightingController : MonoBehaviour
             _activeFish.GetComponent<FishBase>().ActivateTakeDamage(activeFishHealth);
             activeFishHealth -= punchDamage; 
         }
-        else
+        else if(activeFishHealth <= 2 && activeFishHealth != 0)
+        {
+            RadioManager.instance.PlaySoundEffect(finalPunchSoundEffect);
+            _activeFish.GetComponent<FishBase>().ActivateTakeDamage(activeFishHealth);
+
+        }
+        else if (activeFishHealth == 0)
         {
             RadioManager.instance.PlaySoundEffect(finalPunchSoundEffect);
             _activeFish.GetComponent<FishBase>().ActivateTakeDamage(activeFishHealth);
             _activeFish.GetComponent<FishBase>().SetPosition();
-            winState = true; 
+            winState = true;
             EndRound();
         }
     }
@@ -216,11 +223,13 @@ public class FightingController : MonoBehaviour
         while( currentTime > 0 )
         {
             countDownDisplay.text = currentTime.ToString();
+            RadioManager.instance.PlaySoundEffect(bellSoundEffect);
             yield return new WaitForSeconds(1f);
 
             currentTime--; 
         }
 
+        RadioManager.instance.PlaySoundEffect(bellSoundEffect);
         countDownDisplay.text = "WRANGLE TIME!!";
          yield return new WaitForSeconds(1f);
 

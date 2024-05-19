@@ -28,6 +28,7 @@ public class FishingController : MonoBehaviour
     [SerializeField] private AudioClip bobberSoundEffect;
     [SerializeField] private AudioClip biteOnLineSoundEffect;
     [SerializeField] private AudioClip beachAmbiance;
+    [SerializeField] private AudioClip sitDownSoundEffect; 
 
     [Header("Scripts")]
     [SerializeField] private SceneManager sceneManager;
@@ -204,6 +205,7 @@ public class FishingController : MonoBehaviour
                 fishOnLine = true;
                 fishingNotif.SetActive(true);
                 FishingAnimator.SetBool("FishOnLine", true);
+                RadioManager.instance.PlaySoundEffect(biteOnLineSoundEffect);
                 currentFishOnLine = shuffledFish[i];
                 responseTimer = responseTime;
                 break;
@@ -225,6 +227,7 @@ public class FishingController : MonoBehaviour
         fishOnLine = false;
         FishingAnimator.SetBool("FishOnLine", false);
         timer = 0;
+        RadioManager.instance.PlaySoundEffect(sitDownSoundEffect);
     }
 
     private void CatchFish()
@@ -289,6 +292,7 @@ public class FishingController : MonoBehaviour
             
 
         }
+        RadioManager.instance.PlaySoundEffect(sitDownSoundEffect);
         _playerInput.enabled = true;
     }
 

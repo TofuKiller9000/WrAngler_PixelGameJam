@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2225566170da5b4d968a93d32897e70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fishName: Chongus
+  fishName: Big Gulp
   fishDescription: 
   spawnChance: 10
   health: 20

@@ -98,10 +98,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2225566170da5b4d968a93d32897e70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fishName: Leggy
+  fishName: Green Poker
   fishDescription: 
-  spawnChance: 12
-  health: 100
+  spawnChance: 20
+  health: 15
   healthySprite: {fileID: 21300000, guid: d6f9a4ec5f6ccdd44938a068e4daf349, type: 3}
   hurtSprite: {fileID: 21300000, guid: 29f6017c33733de4599f17d581ab66bf, type: 3}
   defeatedSprite: {fileID: 21300000, guid: 987111bf7cb59194d87e89b8c0a74feb, type: 3}

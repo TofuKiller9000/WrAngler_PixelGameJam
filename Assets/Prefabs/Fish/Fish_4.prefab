@@ -100,8 +100,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fishName: Worm
   fishDescription: 
-  spawnChance: 20
-  health: 5
+  spawnChance: 35
+  health: 15
   healthySprite: {fileID: 21300000, guid: b97c2f96f634e2c4ca948a309464763d, type: 3}
   hurtSprite: {fileID: 21300000, guid: c7ef68a0baebe8548b0af7f6901c8054, type: 3}
   defeatedSprite: {fileID: 21300000, guid: 46a737b825b39294f987dfaa98c487c6, type: 3}

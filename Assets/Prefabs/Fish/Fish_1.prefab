@@ -100,7 +100,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fishName: Squeeze
   fishDescription: 
-  spawnChance: 75
+  spawnChance: 80
   health: 5
   healthySprite: {fileID: 21300000, guid: 05edfa7b7c4ed2840921e6cab2acabef, type: 3}
   hurtSprite: {fileID: 21300000, guid: 6a66e50b4e266eb488e3557a2328da33, type: 3}
