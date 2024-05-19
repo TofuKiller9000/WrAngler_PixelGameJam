@@ -1,0 +1,51 @@
+{
+    "name": "PlayerClicks",
+    "maps": [
+        {
+            "name": "PlayerClick",
+            "id": "5badd214-d810-4a01-83f9-d94878b46bdf",
+            "actions": [
+                {
+                    "name": "PunchPlay",
+                    "type": "Button",
+                    "id": "fdb2b332-2bb9-41f6-a54e-b48c12bc89ab",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d5c85f47-9e38-452a-ba66-d705d01bc5ff",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "MouseAndKeyboard",
+                    "action": "PunchPlay",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "MouseAndKeyboard",
+            "bindingGroup": "MouseAndKeyboard",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": true,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Mouse>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}
