@@ -99,7 +99,7 @@ public class FightingController : MonoBehaviour
             _punchTimer = punchDelay;
             _animator.SetTrigger("Punch"); //Triggers the DamageFish() function as an animation event
         }
-        else if(_punchTimer < -0.01)
+        else if(_punchTimer < 0)
         {
             Debug.Log("punchTimer: " +  _punchTimer + " isRoundActive?: " + isRoundActive + " Context: " + context.phase);
             _punchTimer = punchDelay;

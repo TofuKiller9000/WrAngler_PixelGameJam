@@ -23,6 +23,7 @@ public class FishingController : MonoBehaviour
     [Header("Animation & UI")]
     [SerializeField] private Animator FishingAnimator;
     [SerializeField] private GameObject fishingNotif;
+    [SerializeField] private GameObject splash; 
 
     [Space]
     [Header("Audio Properties")]
@@ -125,6 +126,7 @@ public class FishingController : MonoBehaviour
         gameObject.transform.localPosition = _defaultPosition;
         gameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
         Debug.Log("Player local position: " + gameObject.transform.localPosition);
+        splash.SetActive(false);
     }
 
     void Update()
@@ -255,6 +257,7 @@ public class FishingController : MonoBehaviour
         RadioManager.instance.PauseAllStations();
         RadioManager.instance.StopAmbience();
         RadioManager.instance.PlaySoundEffect(diveSoundEffect);
+        splash.SetActive(true);
         firstLoadIn = false; 
         sceneManager.ActivateTransistion(1, 0, "Fighting"); //activate our Scene Transistion coroutine in our scene manager
     }
