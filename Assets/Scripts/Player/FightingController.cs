@@ -33,7 +33,7 @@ public class FightingController : MonoBehaviour
 
     [Header("Animations & UI")]
     [SerializeField] private Image timerForeground;
-    [SerializeField] TextMeshProUGUI countDownDisplay; 
+    [SerializeField] TextMeshProUGUI countDownDisplay;
 
     [Space]
     [Header("Scripts & Components")]
@@ -80,7 +80,6 @@ public class FightingController : MonoBehaviour
         timerParent.SetActive(true);
         _punchTimer = punchDelay;
         winState = false;
-//sceneManager.ActivateTransistion(0, 1);
         StartRound();
     }
 
@@ -100,9 +99,10 @@ public class FightingController : MonoBehaviour
             _punchTimer = punchDelay;
             _animator.SetTrigger("Punch"); //Triggers the DamageFish() function as an animation event
         }
-        else if(_punchTimer <= 0)
+        else if(_punchTimer < -0.01)
         {
             Debug.Log("punchTimer: " +  _punchTimer + " isRoundActive?: " + isRoundActive + " Context: " + context.phase);
+            _punchTimer = punchDelay;
         }
     }
 

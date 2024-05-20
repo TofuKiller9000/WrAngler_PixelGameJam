@@ -12,10 +12,7 @@ public class RadioController : MonoBehaviour
     private RadioManager controller;
     private bool cooldownComplete;
 
-    [SerializeField] private GameObject inLandText;
-    [SerializeField] private GameObject ADFMText;
-    [SerializeField] private GameObject theWaveText;
-    [SerializeField] private GameObject offText; 
+
 
     private void Start()
     {

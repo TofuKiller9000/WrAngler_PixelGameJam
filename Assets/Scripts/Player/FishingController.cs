@@ -9,8 +9,11 @@ public class FishingController : MonoBehaviour
     #region Properties
 
     [Header("Fishing Properties")]
+    [SerializeField] private float minFishingWaitTime;
     [SerializeField] private float maxFishingWaitTime;
     [SerializeField] private float responseTime;
+    [SerializeField] private float castDelay;
+     
     [Space]
     [SerializeField] private Transform fightingPlayerFishHolder;
     [SerializeField] private Transform fishingPlayerFishHolder; 
@@ -50,6 +53,7 @@ public class FishingController : MonoBehaviour
     private float timer = 0;
     private float timeTillSkillCheck;
     private float responseTimer;
+    private float castTimer;
     public Vector3 _defaultPosition; 
     private GameObject currentFishOnLine;
     private List<GameObject> shuffledFish;
@@ -71,10 +75,13 @@ public class FishingController : MonoBehaviour
         timer = 0;
         fishOnLine = false;
         _defaultPosition = transform.localPosition;
+        castTimer = castDelay;
     }
 
     private void OnEnable()
     {
+        castTimer = castDelay;
+
         Debug.Log("Player local position: " + gameObject.transform.localPosition);
         gameObject.transform.localPosition = _defaultPosition;
         gameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
@@ -108,16 +115,6 @@ public class FishingController : MonoBehaviour
             else
             {
                 StartCoroutine(FishingRoundStart());
-                //_playerInput.enabled = false;
-                //isFishing = false;
-                //bobber.SetActive(false);
-                //fishingNotif.SetActive(false);
-                //timer = 0;
-                //fishOnLine = false;
-                //FishingAnimator.SetTrigger("Return");
-                //RadioManager.instance.StopAmbience();
-                //RadioManager.instance.PlayAmbience(beachAmbiance);
-                //_playerInput.enabled = true;
             }
         }
     }
@@ -154,6 +151,10 @@ public class FishingController : MonoBehaviour
                 ReelIn();
             }
         }
+        if(castTimer > 0)
+        {
+            castTimer -= Time.deltaTime;
+        }
     }
 
 
@@ -161,8 +162,9 @@ public class FishingController : MonoBehaviour
     public void OnClick(InputAction.CallbackContext context)
     {
 
-        if (context.canceled && !winGameState)
+        if (context.canceled && !winGameState && castTimer <= 0)
         {
+            castTimer = castDelay;
             //print("Click!");
             if (!isFishing) //we haven't cast our line yet
             {
@@ -260,8 +262,8 @@ public class FishingController : MonoBehaviour
     public void LineCast()
     {
         //Our line has been cast, and we set our bobber to be active
-        bobber.SetActive(true); //this is temporary, and is only here for testing purposes. Will be replaced by animations when they are done
-        timeTillSkillCheck = Random.Range(1, maxFishingWaitTime+1); //we set the time till a skill check to a random value from 1 to our maxFishing wait time
+        bobber.SetActive(true); 
+        timeTillSkillCheck = Random.Range(1, maxFishingWaitTime+1) + minFishingWaitTime; //we set the time till a skill check to a random value from 1 to our maxFishing wait time
         isFishing = true;
         RadioManager.instance.PlaySoundEffect(bobberSoundEffect);
     }
