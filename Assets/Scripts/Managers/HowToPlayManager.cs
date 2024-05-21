@@ -23,7 +23,8 @@ public class HowToPlayManager : MonoBehaviour
     public GameObject waveTransition;
     
     private SpriteRenderer playButtonSprite;
-    private void Awake()
+
+    private void Start()
     {
         playButtonSprite = playButton.GetComponent<SpriteRenderer>();
 
